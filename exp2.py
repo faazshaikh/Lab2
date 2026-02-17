@@ -10,11 +10,11 @@ graph_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(graph_module)
 
 create_random_graph = graph_module.create_random_graph
-has_cycle = graph_module.has_cycle
+is_connected = graph_module.is_connected
 
 
 # ---------- Experiment helper ----------
-def probCYCLE(countofNODE, n, trials=20, seed=0):
+def probCONNECTED(countofNODE, n, trials=20, seed=0):
 
     rng = random.Random(seed)
     tempResults = []
@@ -25,7 +25,7 @@ def probCYCLE(countofNODE, n, trials=20, seed=0):
 
         objGRAPH = create_random_graph(countofNODE, n)
 
-        if has_cycle(objGRAPH):
+        if is_connected(objGRAPH):
             tempResults.append(1)
         else:
             tempResults.append(0)
@@ -39,33 +39,34 @@ def main():
     trials = 20
     seed = 42
 
-    sizes = list(range(0, 501, 10))  # number of edges
+    sizes = list(range(0, 501, 10))
 
     # ---------- Collect results ----------
     results = []
     for n in sizes:
-        t = probCYCLE(countofNODE, n, trials=trials, seed=seed + n)
+        t = probCONNECTED(countofNODE, n, trials=trials, seed=seed + n)
         results.append(t)
         print(f"n={n:4d}  prob={t:.4f}")
 
-    # ---------- Plot 1: edges vs probability ----------
+    # ---------- Graph 1: full range ----------
     plt.figure()
     plt.plot(sizes, results, marker="o")
     plt.xlabel("Number of edges")
-    plt.ylabel("Cycle probability")
-    plt.title("Cycle probability vs number of edges")
+    plt.ylabel("Connected probability")
+    plt.title("Connected probability vs number of edges")
     plt.tight_layout()
     plt.show()
 
-    # ---------- Plot 2: proportion of edges vs probability ----------
-    edgesMAX = countofNODE * (countofNODE - 1) // 2
-    propSizes = [n / edgesMAX for n in sizes]
+
+    # ---------- Graph 2: transition region ----------
+    regionSizes = [n for n in sizes if 150 <= n <= 400]
+    regionResults = [results[i] for i in range(len(sizes)) if 150 <= sizes[i] <= 400]
 
     plt.figure()
-    plt.plot(propSizes, results, marker="o")
-    plt.xlabel("Proportion of edges (n / edgesMAX)")
-    plt.ylabel("Cycle probability")
-    plt.title("Cycle probability vs proportion of edges")
+    plt.plot(regionSizes, regionResults, marker="o")
+    plt.xlabel("Number of edges")
+    plt.ylabel("Connected probability")
+    plt.title("Connected probability vs number of edges")
     plt.tight_layout()
     plt.show()
 
